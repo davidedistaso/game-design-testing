@@ -1,0 +1,158 @@
+[gd_scene load_steps=6 format=3 uid="uid://bmshyxcy3hgid"]
+
+[sub_resource type="GDScript" id="GDScript_tp0or"]
+script/source = "extends Control
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	randomize()
+"
+
+[sub_resource type="GDScript" id="GDScript_ppc5f"]
+resource_name = "lootbox"
+script/source = "extends Node
+
+@export var cost = 0.99
+
+func get_loot_box_item():
+	var random_float = randf()
+	if random_float < 0.17:
+		# 17% chance of containing a Sword.
+		return \"Sword\"
+	elif random_float < 0.22:
+		# 5% chance of containing an Armor.
+		return \"Armor\"
+	else:
+		# 78% chance of containing nothing special.
+		return \"Nothing\"
+"
+
+[sub_resource type="GDScript" id="GDScript_l418j"]
+script/source = "extends Node
+
+@export var cost = 1.2
+
+func get_loot_box_item():
+	var random_float = randf()
+	if random_float < 0.03:
+		# 17% chance of containing a Sword.
+		return \"Sword\"
+	elif random_float < 0.28:
+		# 5% chance of containing an Armor.
+		return \"Armor\"
+	else:
+		# 78% chance of containing nothing special.
+		return \"Nothing\"
+"
+
+[sub_resource type="GDScript" id="GDScript_pnmjo"]
+script/source = "extends Node
+
+@export var cost = 0.7
+
+func get_loot_box_item():
+	var random_float = randf()
+	if random_float < 0.06:
+		# 17% chance of containing a Sword.
+		return \"Sword and Armor\"
+"
+
+[sub_resource type="GDScript" id="GDScript_clwsy"]
+script/source = "extends Node
+
+var money_spent = 0
+var sword = false
+var armour = false
+
+var runs = []
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	while runs.size() <= 1000:
+		purchase_static($\"../LootBox3\")
+	print(\"Simulation completed. Average money spent: \"+str(calculate_average(runs)))
+		
+func purchase_dynamic(loot_box_path):
+	var item = loot_box_path.get_loot_box_item()
+	money_spent += loot_box_path.cost
+	match item:
+		\"Sword\":
+			sword = true
+		\"Armor\":
+			armour = true
+		\"Sword and Armor\":
+			sword = true
+			armour = true
+		\"Nothing\":
+			pass	
+	if sword and armour:
+		#print(\"Obtained both items. Money spent: \"+ str(money_spent))
+		runs.append(money_spent)
+		sword = false
+		armour = false
+		money_spent = 0
+		return
+	if sword and not armour:
+		#print(\"Obtained sword\")
+		purchase_dynamic($\"../LootBox2\")
+	else:
+		purchase_dynamic($\"../LootBox1\")
+		
+		
+func purchase_static(loot_box_path):
+	var item = loot_box_path.get_loot_box_item()
+	money_spent += loot_box_path.cost
+	match item:
+		\"Sword\":
+			sword = true
+		\"Armor\":
+			armour = true
+		\"Sword and Armor\":
+			sword = true
+			armour = true
+		\"Nothing\":
+			pass
+	if sword and armour:
+		#print(\"Obtained both items. Money spent: \"+ str(money_spent))
+		runs.append(money_spent)
+		sword = false
+		armour = false
+		money_spent = 0
+		return
+	else:
+		purchase_static(loot_box_path)
+
+func calculate_average(array_values):
+	var array_sum = 0.0
+	var array_length = array_values.size()
+
+	# Calculate the sum of all elements in the array
+	for value in array_values:
+		array_sum += value
+
+	# Calculate the average
+	var average = array_sum / array_length
+	return average
+"
+
+[node name="LootBoxes" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_tp0or")
+
+[node name="LootBox1" type="Node" parent="."]
+script = SubResource("GDScript_ppc5f")
+
+[node name="LootBox2" type="Node" parent="."]
+script = SubResource("GDScript_l418j")
+
+[node name="LootBox3" type="Node" parent="."]
+script = SubResource("GDScript_pnmjo")
+
+[node name="User" type="Node" parent="."]
+script = SubResource("GDScript_clwsy")

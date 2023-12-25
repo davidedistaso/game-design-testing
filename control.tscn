@@ -1,0 +1,67 @@
+[gd_scene load_steps=5 format=3 uid="uid://dg25mka156ch8"]
+
+[ext_resource type="Script" path="res://attack.gd" id="1_elrcu"]
+
+[sub_resource type="GDScript" id="GDScript_dkqnt"]
+script/source = "extends Node
+
+@export var base_attack_power : int
+@export var hits_per_second : float
+
+func _ready() -> void:
+	for i in range(0, 4):
+		var skeleton = Skeleton.new()
+		add_child(skeleton)
+"
+
+[sub_resource type="GDScript" id="GDScript_gx3f4"]
+script/source = "extends Node
+
+func _ready() -> void:
+	add_to_group(\"Dragons\")
+
+# Called when the node enters the scene tree for the first time.
+func attacked(points):
+	print(points)
+	$Health.health_points -= points
+"
+
+[sub_resource type="GDScript" id="GDScript_o8syn"]
+script/source = "extends Node
+var time_start
+
+@export var health_points : int :
+	set(value):
+		health_points = value
+		print(health_points)
+		if health_points <= 0:
+			var time_now = Time.get_unix_time_from_system()
+			print(time_now - time_start)
+
+func _ready() -> void:
+	time_start = Time.get_unix_time_from_system()
+"
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Necromancer" type="Node" parent="."]
+script = SubResource("GDScript_dkqnt")
+base_attack_power = 250
+hits_per_second = 0.5
+
+[node name="BaseAttack" type="Node" parent="Necromancer"]
+script = ExtResource("1_elrcu")
+
+[node name="Dragon" type="Node" parent="."]
+unique_name_in_owner = true
+script = SubResource("GDScript_gx3f4")
+
+[node name="Health" type="Node" parent="Dragon"]
+script = SubResource("GDScript_o8syn")
+health_points = 5000
